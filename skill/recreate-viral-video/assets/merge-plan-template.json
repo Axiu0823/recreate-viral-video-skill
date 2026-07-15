@@ -1,0 +1,23 @@
+{
+  "assembly_mode": "hard_cut",
+  "target_width": null,
+  "target_height": null,
+  "target_fps": null,
+  "audio_lufs": -16.0,
+  "clips": [
+    {
+      "clip_id": "seg-01",
+      "path": "clip-01/video.mp4",
+      "trim_start_s": 0.0,
+      "trim_end_s": 0.0,
+      "transition_in": "opening"
+    },
+    {
+      "clip_id": "seg-02",
+      "path": "clip-02/video.mp4",
+      "trim_start_s": 0.0,
+      "trim_end_s": 0.0,
+      "transition_in": "match_action_cut"
+    }
+  ]
+}

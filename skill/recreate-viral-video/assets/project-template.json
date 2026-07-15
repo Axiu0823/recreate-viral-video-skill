@@ -1,0 +1,103 @@
+{
+  "project_id": "",
+  "created_at": "",
+  "inputs": {
+    "reference_video": "",
+    "analysis_engine": "current_model",
+    "recreation_mode": "same_category",
+    "target_product": {
+      "name": "",
+      "category": "",
+      "reference_images": [],
+      "verified_selling_points": [],
+      "prohibited_claims": []
+    },
+    "usage_context": {
+      "policy": "adapt",
+      "description": ""
+    },
+    "target_market": "",
+    "language": "",
+    "platform": "TikTok",
+    "aspect_ratio": "9:16",
+    "duration_s": 8,
+    "cta_offer": "",
+    "source_expression_policy": {
+      "dialogue": "ask",
+      "signature_performance": "ask",
+      "likeness": "original_actor",
+      "voice": "new_voice"
+    },
+    "retry_budget": 1
+  },
+  "rights_and_safety": {
+    "reference_analysis_authorized": null,
+    "target_assets_authorized": null,
+    "source_dialogue_authorized": null,
+    "signature_performance_authorized": null,
+    "source_likeness_authorized": null,
+    "source_voice_authorized": null,
+    "source_music_authorized": null,
+    "source_footage_authorized": null,
+    "risks": [],
+    "mitigations": []
+  },
+  "analysis": {
+    "path": "analysis/analysis.json",
+    "validated": false,
+    "unknowns": []
+  },
+  "sequence": {
+    "classification": "standalone_clip",
+    "source_duration_s": null,
+    "verified_model_min_duration_s": null,
+    "verified_model_max_duration_s": null,
+    "segmentation_mode": null,
+    "segment_plan_path": "analysis/segment-plan.json",
+    "segment_plan_approved": false,
+    "current_segment_id": null,
+    "accepted_segment_ids": [],
+    "rejected_segment_ids": [],
+    "extension_depth": 0,
+    "max_chain_depth": 2,
+    "observed_canon": [],
+    "merge_plan_path": "generation/merge-plan.json",
+    "final_video_path": "final/final-video.mp4"
+  },
+  "recreation_contract": {
+    "preserve": [],
+    "adapt": [],
+    "forbid": [],
+    "shot_plan": []
+  },
+  "assets": {
+    "product_images": [],
+    "character_reference": "assets/character-white.png",
+    "scene_reference": "assets/scene.png",
+    "action_keyframe": "",
+    "reference_video_api_url_or_asset_id": ""
+  },
+  "generation": {
+    "seedance_model_or_endpoint_id": "",
+    "request_path": "generation/seedance-request.json",
+    "task_id": "",
+    "video_path": "",
+    "segment_outputs": [],
+    "billable_call_made": false
+  },
+  "qc": {
+    "report_path": "qc/report.json",
+    "critical_failures": [],
+    "scores": {
+      "hook": null,
+      "visual": null,
+      "audio": null,
+      "retention": null,
+      "emotion_conflict": null,
+      "action_performance": null,
+      "persuasion_proof": null,
+      "conversion": null
+    },
+    "decision": "pending"
+  }
+}

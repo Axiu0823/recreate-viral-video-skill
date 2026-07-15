@@ -1,0 +1,29 @@
+{
+  "model": "REPLACE_WITH_MODEL_OR_ENDPOINT_ID",
+  "content": [
+    {
+      "type": "text",
+      "text": "产品外观严格参考图片1；人物身份、脸部和服装参考图片2；场景空间与光线参考图片3。制作一条本地化实拍UGC商品视频。严格按照复刻契约执行已经确认的原对白、动作、标志性表演、镜头、声音与转化策略；人物外貌、声线、音乐、品牌和原始画面按照各自的独立授权设置执行。"
+    },
+    {
+      "type": "image_url",
+      "image_url": {"url": "../source/product.png"},
+      "role": "reference_image"
+    },
+    {
+      "type": "image_url",
+      "image_url": {"url": "../assets/character-white.png"},
+      "role": "reference_image"
+    },
+    {
+      "type": "image_url",
+      "image_url": {"url": "../assets/scene.png"},
+      "role": "reference_image"
+    }
+  ],
+  "duration": 8,
+  "resolution": "720p",
+  "ratio": "9:16",
+  "generate_audio": true,
+  "watermark": false
+}

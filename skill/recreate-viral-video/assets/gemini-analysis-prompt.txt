@@ -1,0 +1,93 @@
+Analyze the supplied short-form product video. Use both visual and audio evidence. Return exactly one valid JSON object with no Markdown fences and no prose outside JSON.
+
+Separate direct observation from inference. Use seconds with decimal precision. Analyze 0–5 seconds at finer resolution than the rest of the video. Do not identify a person or infer sensitive traits. Transcribe intelligible dialogue verbatim and describe signature performance, gestures, choreography, pauses, facial beats, blocking, and camera relationship precisely. Treat dialogue, performance, likeness, voice, music, footage, and brand assets as separate rights-sensitive elements; do not assume authorization.
+
+Required JSON shape:
+{
+  "source_summary": {
+    "duration_s": 0.0,
+    "aspect_ratio_observed": "",
+    "product_category_observed": "",
+    "language_observed": "",
+    "source_style": "",
+    "confidence": 0.0
+  },
+  "hook_0_5s": {
+    "first_frame_contract": "",
+    "micro_beats": [
+      {
+        "start_s": 0.0,
+        "end_s": 0.0,
+        "visual_observation": "",
+        "audio_observation": "",
+        "inferred_function": "",
+        "mechanisms": ["curiosity_gap"],
+        "withheld_information": "",
+        "stakes": "",
+        "confidence": 0.0
+      }
+    ],
+    "trigger_time_s": 0.0,
+    "product_visibility": "hidden|peripheral|partial|explicit",
+    "hook_resolution_time_s": 0.0,
+    "why_it_may_hold_attention": ""
+  },
+  "timeline": [
+    {
+      "start_s": 0.0,
+      "end_s": 0.0,
+      "shot_function": "",
+      "visual": "",
+      "audio": "",
+      "emotion": "",
+      "retention_device": "",
+      "transition": "",
+      "confidence": 0.0
+    }
+  ],
+  "source_expression": {
+    "dialogue_segments": [
+      {
+        "start_s": 0.0,
+        "end_s": 0.0,
+        "verbatim": "",
+        "language": "",
+        "speaker_role": "",
+        "delivery": "",
+        "confidence": 0.0
+      }
+    ],
+    "signature_performance_segments": [
+      {
+        "start_s": 0.0,
+        "end_s": 0.0,
+        "action_sequence": "",
+        "gesture_timing": "",
+        "facial_expression": "",
+        "blocking": "",
+        "camera_relationship": "",
+        "confidence": 0.0
+      }
+    ]
+  },
+  "dimensions": {
+    "hook": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "visual": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "audio": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "retention": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "emotion_conflict": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "action_performance": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "persuasion_proof": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0},
+    "conversion": {"observation": "", "function": "", "transfer_rule": "", "evidence_timestamps": [], "confidence": 0.0}
+  },
+  "transferable_genes": [],
+  "rights_sensitive_elements": [],
+  "safety_rights_claim_risks": [],
+  "unknowns": [],
+  "transfer_recommendations": {
+    "same_category": [],
+    "cross_category": []
+  }
+}
+
+Use confidence values from 0 to 1. Use an empty string/list plus an entry in unknowns when evidence is unavailable. Transcribe only dialogue that is actually audible; do not fabricate dialogue or claims.

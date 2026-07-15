@@ -1,0 +1,32 @@
+{
+  "source_duration_s": 42.6,
+  "segmentation_mode": "model_proposed",
+  "model_min_duration_s": 4,
+  "model_max_duration_s": 15,
+  "reference_video_min_duration_s": 2,
+  "reference_video_max_duration_s": 15,
+  "approved": false,
+  "segments": [
+    {
+      "segment_id": "seg-01",
+      "scene_id": "scene-01",
+      "sequence_index": 1,
+      "parent_segment_id": null,
+      "source_start_s": 0.0,
+      "source_end_s": 11.0,
+      "target_duration_s": 11,
+      "narrative_job": "Establish the hook and conflict.",
+      "felt_intent": "The viewer immediately recognizes the pain and wants the answer.",
+      "boundary_reason": "Ends after a complete spoken clause and reaction pause.",
+      "transition_in": "opening",
+      "transition_out": "match_action_cut",
+      "planned_start_state": "Presenter has not revealed the product.",
+      "planned_end_state": "Presenter turns toward the product with the right hand entering frame.",
+      "continuity_locks": [],
+      "allowed_changes": [],
+      "already_happened": [],
+      "reserved_for_later": [],
+      "status": "proposed"
+    }
+  ]
+}

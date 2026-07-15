@@ -1,0 +1,4 @@
+interface:
+  display_name: "爆款视频复刻"
+  short_description: "8维拆解并分段生成、连续复刻和合并长短爆款视频"
+  default_prompt: "使用 $recreate-viral-video 拆解这个参考视频；若超过 Seedance 限制，先提出分段方案让我确认，再逐段生成并合并。"
