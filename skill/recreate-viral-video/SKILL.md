@@ -17,6 +17,7 @@ Turn a reference video into an original, localized product video that inherits t
 - Treat product demonstrations as causal state changes. A correct end frame cannot substitute for a missing loading, sealing, activation, transformation, or proof step.
 - Keep analysis and generation separate. Never let a generated storyboard overwrite observations from the source.
 - State uncertainty. If audio, a cut, or on-screen text cannot be verified, mark it unknown instead of guessing.
+- Treat temporary hosting as an external data transfer. Upload only the exact authorized local video, never project configuration, credentials, or unrelated files.
 
 Read [references/methodology.md](references/methodology.md) before analyzing a new reference. Read [references/prompt-library.md](references/prompt-library.md) before generating images or compiling the Seedance prompt. Read [references/toolchain.md](references/toolchain.md) before using Gemini or Seedance APIs.
 
@@ -205,6 +206,25 @@ Use this default reference order:
 
 Pass each image with `role: reference_image` in upload order and refer to it as `图片1`…`图片n`. Pass an eligible reference video with `role: reference_video` and call it `视频1`. Do not mix `first_frame`/`last_frame` mode with multimodal reference mode.
 
+When an authorized reference video exists only as a local file, obtain explicit approval to send that file to the configured third-party host. Then either upload it separately:
+
+```bash
+python3 scripts/temp_video_upload.py /path/reference-clip.mp4 \
+  --confirm-external-upload \
+  --output /path/project/assets/reference-video-upload.json
+```
+
+or place the local path in `video_url.url` and let the Seedance runner resolve it immediately before submission:
+
+```bash
+ARK_API_KEY=... python3 scripts/seedance_task.py \
+  /path/project/generation/seedance-request.json \
+  --output-dir /path/project/generation \
+  --allow-temp-video-upload --download
+```
+
+The authorization flag is mandatory. The bundled anonymous tmpfile.link adapter accepts validated video files up to the provider's current 100 MB limit, verifies the returned public URL, and records its expected seven-day expiry. Reuse an unexpired verified URL instead of uploading the same clip again. Do not use temporary public hosting for confidential footage.
+
 Set reference precedence explicitly: canonical images control product, actor, wardrobe, and scene identity; reference video controls only the authorized motion, camera, timing, and performance assigned to it. If a source video contains a visually conflicting product, caption, logo, bag, wardrobe, or background that the model keeps copying, do not rely on negative wording alone. Omit that video, crop or mask the conflicting region, or create a silent low-detail motion donor and inspect it before upload. Read [references/prompt-library.md](references/prompt-library.md) for the binding pattern.
 
 Allocate one generation to one critical physical proof. When the narrative requires several causal steps or a continuous transformation, use the minimum supported clip duration for focused micro-shots and trim them in post. A terminal anchor may constrain the desired result, but it never proves that the required process occurred.
@@ -297,6 +317,7 @@ Return a concise summary and links to the project package artifacts:
 - `project.json` with the recreation contract and shot plan
 - generated character and scene references
 - standalone request/video or per-segment requests, task responses, and accepted videos
+- `reference-video-uploads.json` whenever local videos were temporarily hosted
 - `generation/merge-plan.json`, `final/final-video.mp4`, and `final/merge-report.json` for sequences
 - `qc/report.json`
 

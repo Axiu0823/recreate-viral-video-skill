@@ -14,6 +14,7 @@
 - 使用 Codex 图像生成能力制作原创模特白底图和场景图。
 - 编译 Seedance 2.0 多模态请求，支持长视频语义分段、逐段生成、连续性控制和本地合并。
 - 明确产品图、人物图、场景图和动作参考视频的属性优先级，防止源视频污染目标产品外观。
+- 经明确授权后，可将本地参考视频匿名上传到 tmpfile.link，自动验证临时 URL 并记录预计过期时间。
 - 所有 API 密钥只从环境变量读取，不写入项目、提示词或日志。
 
 ## 工作流
@@ -59,8 +60,11 @@ GEMINI_API_KEY=... python3 skill/recreate-viral-video/scripts/gemini_video_analy
 ARK_API_KEY=... python3 skill/recreate-viral-video/scripts/seedance_task.py \
   /path/project/generation/seedance-request.json \
   --output-dir /path/project/generation \
+  --allow-temp-video-upload \
   --download
 ```
+
+当 Seedance 请求中的 `video_url.url` 是本地路径时，`--allow-temp-video-upload` 表示已批准将该视频传输到 tmpfile.link。匿名链接预计 7 天后失效，单文件上限以服务商当前规则为准；不要上传机密视频、密钥、请求文件或日志。
 
 API 调用可能产生费用。正式提交前应确认端点、分辨率、时长和重试预算。
 

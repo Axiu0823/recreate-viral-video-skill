@@ -15,6 +15,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from temp_video_upload import inspect_video, upload_and_verify
+
 
 TASKS_URL = "https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks"
 TERMINAL = {"succeeded", "failed", "expired", "cancelled"}
@@ -31,6 +33,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--timeout", type=float, default=1800.0)
     parser.add_argument("--download", action="store_true")
     parser.add_argument("--no-poll", action="store_true")
+    parser.add_argument(
+        "--allow-temp-video-upload",
+        action="store_true",
+        help=(
+            "Allow local reference videos to be uploaded anonymously to tmpfile.link "
+            "and replaced with verified temporary URLs"
+        ),
+    )
     parser.add_argument(
         "--validate-only",
         action="store_true",
@@ -97,8 +107,17 @@ def data_url(path: Path) -> str:
     return f"data:{mime_type};base64,{encoded}"
 
 
-def expand_local_images(body: dict[str, Any], request_dir: Path) -> None:
-    for item in body.get("content", []):
+def expand_local_media(
+    body: dict[str, Any],
+    request_dir: Path,
+    *,
+    allow_temp_video_upload: bool,
+    validate_only: bool = False,
+) -> list[dict[str, Any]]:
+    upload_records: list[dict[str, Any]] = []
+    upload_cache: dict[Path, dict[str, Any]] = {}
+    local_reference_duration = 0.0
+    for content_index, item in enumerate(body.get("content", [])):
         if item.get("type") == "image_url":
             image = item.get("image_url")
             if not isinstance(image, dict) or not isinstance(image.get("url"), str):
@@ -111,17 +130,48 @@ def expand_local_images(body: dict[str, Any], request_dir: Path) -> None:
                 path = (request_dir / path).resolve()
             if not path.is_file():
                 raise RuntimeError(f"Local image does not exist: {path}")
-            image["url"] = data_url(path)
+            if not validate_only:
+                image["url"] = data_url(path)
         elif item.get("type") == "video_url":
             video = item.get("video_url")
             if not isinstance(video, dict) or not isinstance(video.get("url"), str):
                 raise RuntimeError("video_url items require video_url.url")
             value = video["url"]
-            if not value.startswith(("http://", "https://", "asset://")):
+            if value.startswith(("http://", "https://", "asset://")):
+                continue
+            path = Path(value).expanduser()
+            if not path.is_absolute():
+                path = (request_dir / path).resolve()
+            info = inspect_video(path)
+            duration = float(info["duration_s"])
+            if not 2 <= duration <= 15:
                 raise RuntimeError(
-                    "Seedance reference_video requires a public URL or Ark asset ID; "
-                    "local/base64 video is not supported by this workflow"
+                    f"Local Seedance reference video must be 2–15 seconds: {path} "
+                    f"is {duration:.3f}s"
                 )
+            local_reference_duration += duration
+            if local_reference_duration > 15.05:
+                raise RuntimeError(
+                    "Local Seedance reference videos exceed the 15-second total limit"
+                )
+            if validate_only:
+                continue
+            if not allow_temp_video_upload:
+                raise RuntimeError(
+                    "Seedance reference_video requires a public URL or Ark asset ID. "
+                    "To upload this local video anonymously to tmpfile.link, re-run with "
+                    "--allow-temp-video-upload after the user authorizes external transfer."
+                )
+            record = upload_cache.get(path)
+            if record is None:
+                record = upload_and_verify(info)
+                record["content_indices"] = [content_index]
+                upload_cache[path] = record
+                upload_records.append(record)
+            else:
+                record["content_indices"].append(content_index)
+            video["url"] = record["download_url"]
+    return upload_records
 
 
 def api_json(method: str, url: str, api_key: str, body: dict | None = None) -> dict:
@@ -171,18 +221,29 @@ def main() -> int:
     body = load_request(request_path)
     validate_request(body)
     if args.validate_only:
+        expand_local_media(
+            body,
+            request_path.parent,
+            allow_temp_video_upload=False,
+            validate_only=True,
+        )
         print(f"valid: {request_path}")
         return 0
 
     api_key = os.environ.get("ARK_API_KEY")
     if not api_key:
         raise RuntimeError("ARK_API_KEY is not set")
-    expand_local_images(body, request_path.parent)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    upload_records = expand_local_media(
+        body,
+        request_path.parent,
+        allow_temp_video_upload=args.allow_temp_video_upload,
+    )
+    if upload_records:
+        write_json(output_dir / "reference-video-uploads.json", {"uploads": upload_records})
     payload_size = len(json.dumps(body, ensure_ascii=False).encode("utf-8"))
     if payload_size >= 64 * 1024 * 1024:
         raise RuntimeError("Expanded request body reaches the documented 64 MB limit")
-    output_dir.mkdir(parents=True, exist_ok=True)
-
     submitted = api_json("POST", TASKS_URL, api_key, body)
     write_json(output_dir / "submit-response.json", submitted)
     task_id = submitted.get("id")
