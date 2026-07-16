@@ -5,10 +5,12 @@
 1. Eight dimensions
 2. Hook diagnosis
 3. Beat-map rules
-4. Same-category transfer
-5. Cross-category transfer
-6. Localization
-7. QC scoring
+4. Scene-boundary verification
+5. Causal proof chains
+6. Same-category transfer
+7. Cross-category transfer
+8. Localization
+9. QC scoring
 
 ## Eight dimensions
 
@@ -69,6 +71,48 @@ Separate observation from inference:
 - Observation: “At 00:01.1, the actor stops speaking and looks off camera.”
 - Inference: “The pause delays the reveal and raises social tension.”
 - Transfer: “Insert a short silent reaction immediately before the target product reveal.”
+
+## Scene-boundary verification
+
+Do not infer visual continuity from a shared product, use context, actor, or voice-over. At every meaningful hard cut and every proposed segment boundary, inspect dense frames on both sides and record:
+
+| Dimension | Before cut | After cut | Changed? |
+|---|---|---|---|
+| Background/location | Observable room, wall, floor, bed, counter, exterior | Same fields | yes/no/unknown |
+| Working surface | Material, color, texture, orientation | Same fields | yes/no/unknown |
+| Wardrobe/body | Sleeves, jewelry, watch, nails, visible skin, actor count | Same fields | yes/no/unknown |
+| Handled objects | Product instance, garments, props, containers | Same fields | yes/no/unknown |
+| Prop geography | Suitcase, furniture, tools, object placement | Same fields | yes/no/unknown |
+| Camera/light | Height, angle, direction, color temperature, shadows | Same fields | yes/no/unknown |
+
+Classify the boundary as `same_scene` only when the evidence supports continuity. Use `new_scene` when a changed background, surface, wardrobe, object set, prop layout, camera setup, or lighting reset materially changes the generation prompt. A hard cut can remain inside one scene, and the same use context can contain several scenes.
+
+Store evidence frame times and confidence. If either side is occluded or blurred, mark the dimension unknown and inspect additional nearby frames instead of copying continuity locks forward.
+
+## Causal proof chains
+
+For every product demonstration, model what the viewer must see to believe the claim:
+
+```json
+{
+  "claim_or_belief_shift": "the product causes the visible result",
+  "visible_start_state": "observable condition before use",
+  "steps": [
+    {
+      "order": 1,
+      "action": "physically correct user action",
+      "required_visible_end_state": "observable state after the action",
+      "continuity": "continuous"
+    }
+  ],
+  "terminal_proof": "observable result and proof angle",
+  "must_show_progression": true
+}
+```
+
+Distinguish an endpoint proof from a causal proof. A before/after cut can prove comparison when the source uses one, but it cannot replace a required continuous transformation. Reject a take when an object appears after a cut without being placed, a sealed item changes contents, activation is missing, the process jumps directly to the result, or the terminal proof contradicts the preceding state.
+
+An inserted terminal still may extend a valid result hold. It cannot repair a missing action or state transition.
 
 ## Same-category transfer
 

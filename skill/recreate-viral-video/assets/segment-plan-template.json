@@ -1,5 +1,5 @@
 {
-  "source_duration_s": 42.6,
+  "source_duration_s": 11.0,
   "segmentation_mode": "model_proposed",
   "model_min_duration_s": 4,
   "model_max_duration_s": 15,
@@ -18,10 +18,22 @@
       "narrative_job": "Establish the hook and conflict.",
       "felt_intent": "The viewer immediately recognizes the pain and wants the answer.",
       "boundary_reason": "Ends after a complete spoken clause and reaction pause.",
+      "scene_boundary_audit": {
+        "classification": "opening",
+        "evidence_frames_s": [0.0],
+        "changed_dimensions": [],
+        "notes": "Opening frame establishes scene-01."
+      },
       "transition_in": "opening",
       "transition_out": "match_action_cut",
       "planned_start_state": "Presenter has not revealed the product.",
       "planned_end_state": "Presenter turns toward the product with the right hand entering frame.",
+      "non_skippable_action_chain": [],
+      "proof_requirement": {
+        "type": "none",
+        "must_show_progression": false,
+        "terminal_anchor_only_is_insufficient": false
+      },
       "continuity_locks": [],
       "allowed_changes": [],
       "already_happened": [],

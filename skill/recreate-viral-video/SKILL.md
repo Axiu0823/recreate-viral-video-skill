@@ -13,6 +13,8 @@ Turn a reference video into an original, localized product video that inherits t
 - Set a source-expression policy: preserve authorized original dialogue and signature performance when requested; otherwise rewrite them. Treat dialogue, performance/choreography, likeness, voice, music, footage, and brand assets as separate rights decisions.
 - Ground product claims in user-provided evidence. Do not invent medical, financial, comparative, scarcity, testimonial, or performance claims.
 - Treat the first 3–5 seconds as a guaranteed high-density sequence. Also trigger dense local analysis around every cut boundary, conflict turn, reveal, proof, payoff, and CTA.
+- Verify both sides of every meaningful cut before assigning scene continuity. Shared product context does not prove that background, wardrobe, props, or lighting remain the same.
+- Treat product demonstrations as causal state changes. A correct end frame cannot substitute for a missing loading, sealing, activation, transformation, or proof step.
 - Keep analysis and generation separate. Never let a generated storyboard overwrite observations from the source.
 - State uncertainty. If audio, a cut, or on-screen text cannot be verified, mark it unknown instead of guessing.
 
@@ -112,6 +114,8 @@ Include a timestamped beat map and a dedicated 0–5 second hook diagnosis. Vali
 python3 scripts/validate_analysis.py /path/project/analysis/analysis.json
 ```
 
+For every meaningful hard cut, record a `scene_boundaries` entry from dense frames immediately before and after the cut. Compare background, working surface, wardrobe, handled objects, prop geography, camera, and lighting. For every product proof, record a `causal_proof_chains` entry with the visible starting state, ordered actions, required continuous state changes, and terminal proof. Read the matching sections in [references/methodology.md](references/methodology.md).
+
 ## 5. Gate and segment long videos
 
 Read [references/long-video-workflow.md](references/long-video-workflow.md) whenever the source exceeds the verified active Seedance duration or contains connected clips.
@@ -122,7 +126,7 @@ Read [references/long-video-workflow.md](references/long-video-workflow.md) when
 4. Report the measured duration, verified maximum, mathematical minimum segment count, and a semantic recommendation.
 5. Let the user provide exact ranges (`user_ranges`) or let the model propose ranges (`model_proposed`).
 6. For model proposals, analyze the full source first and cut only at completed dialogue, action, camera, scene, or persuasion beats. Do not cut mid-line, mid-gesture, or during product contact.
-7. Show every `start–end` range, narrative job, boundary reason, and target integer duration. Wait for explicit approval.
+7. Show every `start–end` range, narrative job, boundary reason, scene-boundary classification, evidence frame times, and target integer duration. Never carry continuity locks across a verified scene reset. Wait for explicit approval.
 8. Save the approved plan as `analysis/segment-plan.json` and validate it:
 
 ```bash
@@ -169,7 +173,9 @@ For `cross_category`:
 - Remap every literal action to the target product’s real use. Reject actions that do not make physical or commercial sense.
 - Rebuild claims, proof, props, and setting from the target product and market.
 
-Write the contract and shot plan to `project.json.recreation_contract`. Each shot must include start/end time, narrative job, visible action, camera, audio/dialogue, emotion, retention device, transition, and product truth source.
+Write the contract and shot plan to `project.json.recreation_contract`. Each shot must include start/end time, narrative job, visible action, camera, audio/dialogue, emotion, retention device, transition, and product truth source. For a product demonstration, also add a non-skippable action chain with observable start/end states and a proof requirement. Mark whether the proof needs continuous progression; do not reduce a continuous transformation to disconnected before/after frames.
+
+Create a canonical product-identity lock from the user's original images. Apply it to every visible instance, including background units, bundles, reflections, and repeated products; allowing multiple products never allows mixed product models.
 
 For a `sequence_project`, add a global story spine, final outcome, scene map, continuity bible, and one provisional segment card per approved range. Generate only the next unresolved segment prompt; later cards remain provisional.
 
@@ -198,6 +204,10 @@ Use this default reference order:
 - `视频1`: optional authorized reference video, used for motion/camera/timing and, when selected, exact authorized dialogue/performance; exclude it when no public URL or Ark asset ID is available.
 
 Pass each image with `role: reference_image` in upload order and refer to it as `图片1`…`图片n`. Pass an eligible reference video with `role: reference_video` and call it `视频1`. Do not mix `first_frame`/`last_frame` mode with multimodal reference mode.
+
+Set reference precedence explicitly: canonical images control product, actor, wardrobe, and scene identity; reference video controls only the authorized motion, camera, timing, and performance assigned to it. If a source video contains a visually conflicting product, caption, logo, bag, wardrobe, or background that the model keeps copying, do not rely on negative wording alone. Omit that video, crop or mask the conflicting region, or create a silent low-detail motion donor and inspect it before upload. Read [references/prompt-library.md](references/prompt-library.md) for the binding pattern.
+
+Allocate one generation to one critical physical proof. When the narrative requires several causal steps or a continuous transformation, use the minimum supported clip duration for focused micro-shots and trim them in post. A terminal anchor may constrain the desired result, but it never proves that the required process occurred.
 
 The prompt must state the chosen expression policy. For authorized dialogue and signature performance, use:
 
@@ -228,7 +238,7 @@ For long video, plan globally but generate sequentially:
 1. Compile and generate only the first unresolved segment.
 2. Set `return_last_frame: true`.
 3. Inspect the actual clip and record its observed end state.
-4. Mark it `accepted` or `rejected`. Rejected footage never updates canon or becomes a parent reference.
+4. Mark it `accepted` or `rejected` and record `approval_scope` as `continuation_only` or `final_segment`. Rejected footage never updates canon or becomes a parent reference. `continuation_only` is not final acceptance.
 5. Let accepted footage override the planned state when they differ.
 6. Inside one scene, pass the previous accepted clip and/or returned last frame as an additional multimodal reference for the next segment. Describe the required opening state; do not mix strict first/last-frame mode with multimodal reference roles.
 7. At a scene boundary, use an intentional editorial cut and reopen from canonical product, character, and scene references.
@@ -245,6 +255,10 @@ Compare the generated take with the recreation contract, not pixel similarity. R
 - All eight dimensions reproduce their intended function.
 - Same-category beat timing stays approximately within ±15%; cross-category timing may vary up to ±25% when required by product truth.
 - The product is recognizable and used physically correctly.
+- Every non-skippable action is visible in order, with no object or product state appearing discontinuously between cuts.
+- Every required continuous proof shows the state progression, not only a terminal result or inserted still frame.
+- Scene resets match the source boundary audit; same use context is not treated as same background or wardrobe.
+- Every visible product instance follows the canonical product-identity lock.
 - Actor identity, anatomy, gaze, expression, skin texture, hands, and lip-sync remain plausible.
 - Language sounds native to the target market; captions, if added in post, are correct and safe-area compliant.
 - Claims are supported, unauthorized source assets are absent, authorized dialogue/performance follows the approved policy, and CTA is complete.
@@ -252,7 +266,9 @@ Compare the generated take with the recreation contract, not pixel similarity. R
 
 For a failed take, choose one action: keep, fix in post, edit, re-roll, or rewrite. Change one variable per retry and respect the user’s retry budget. Do not hide failures behind more adjectives.
 
-For sequences, run QC on every segment before continuing, then run a second QC pass on the assembled video for duplicated frames, cut timing, dialogue continuity, audio jumps, product/actor drift, and total narrative flow.
+Post-production may repair captions, audio balance, trims, and an already-valid hold duration. It may not convert a failed causal demonstration into a pass by inserting a desired end-state frame, hiding a skipped action, or covering a product-identity mismatch.
+
+For sequences, run QC on every segment before continuing, then run a second QC pass on the assembled video for duplicated frames, cut timing, dialogue continuity, audio jumps, product/actor drift, scene-boundary fidelity, causal proof continuity, and total narrative flow. Recheck the full recreation contract before final acceptance; earlier continuation approvals cannot override a later global mismatch.
 
 ## 11. Assemble accepted clips locally
 

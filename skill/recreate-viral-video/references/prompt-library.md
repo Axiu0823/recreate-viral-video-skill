@@ -6,9 +6,11 @@
 2. Character reference
 3. Scene reference
 4. Action keyframe
-5. Seedance compiler
-6. Continuation compiler
-7. Negative constraints
+5. Motion-reference binding
+6. Causal-proof compiler
+7. Seedance compiler
+8. Continuation compiler
+9. Negative constraints
 
 ## Analysis compiler
 
@@ -54,6 +56,37 @@ Using the supplied target product reference, create one photorealistic keyframe 
 ```
 
 If label fidelity matters, use the original product image as a separate Seedance reference; do not trust generated label text.
+
+## Motion-reference binding
+
+State which modality owns each attribute. Do not use “strictly reference everything” when the source video visually conflicts with the target images.
+
+```text
+图片1是所有可见产品实例的唯一外观标准：轮廓、比例、颜色、材质、按钮、接口、指示灯、底座和配件都以图片1为准，包括远景、盒内和重复出现的产品。视频1只控制镜头节奏、手部动作顺序、停顿、走位和相机运动；忽略视频1中的产品型号、包装、字幕、Logo、布景、服装、声音和音乐。图片2控制人物与服装，图片3控制场景。
+```
+
+If the model still copies conflicting source pixels, stop using the original video as a direct reference. Prefer, in order:
+
+1. a crop that retains only the required hand/body motion;
+2. a masked or low-detail motion donor with source text, logo, and product detail removed;
+3. a short sequence of action keyframes;
+4. text-only timing and blocking instructions.
+
+Mute a motion donor unless its audio is separately authorized and required. Inspect the donor itself before upload. When multiple products are allowed, repeat that every instance must match the canonical target product; “multiple” controls count, not identity.
+
+## Causal-proof compiler
+
+Give a critical demonstration its own focused generation. Bind each time range to a visible state transition:
+
+```text
+本镜头只完成一个因果证明，不省略步骤，不用跳切伪造过程。
+0.0–1.0秒：清楚展示{visible start state}。
+1.0–2.0秒：{action 1}，完成后必须看见{state 1}。
+2.0–3.5秒：{activation/action 2}；从{state 1}连续变化到{state 2}，画面中始终是同一个对象，内容物不得突然出现、消失或更换。
+3.5–4.0秒：从{proof angle}稳定展示{terminal proof}。
+```
+
+Use `continuous` only when the transformation itself is evidence. Use `editorial_cut_allowed` only where the source and product truth permit a before/after cut. A last-frame anchor controls the desired terminal geometry but does not authorize skipping the required progression.
 
 ## Seedance compiler
 
