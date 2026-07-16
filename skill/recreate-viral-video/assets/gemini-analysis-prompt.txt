@@ -45,6 +45,50 @@ Required JSON shape:
       "confidence": 0.0
     }
   ],
+  "scene_boundaries": [
+    {
+      "at_s": 0.0,
+      "before_observation": {
+        "background": "",
+        "working_surface": "",
+        "wardrobe_body": "",
+        "handled_objects": "",
+        "prop_geography": "",
+        "camera_lighting": ""
+      },
+      "after_observation": {
+        "background": "",
+        "working_surface": "",
+        "wardrobe_body": "",
+        "handled_objects": "",
+        "prop_geography": "",
+        "camera_lighting": ""
+      },
+      "changed_dimensions": [],
+      "classification": "same_scene|new_scene",
+      "evidence_frame_times_s": [],
+      "confidence": 0.0
+    }
+  ],
+  "causal_proof_chains": [
+    {
+      "start_s": 0.0,
+      "end_s": 0.0,
+      "claim_or_belief_shift": "",
+      "visible_start_state": "",
+      "steps": [
+        {
+          "order": 1,
+          "action": "",
+          "required_visible_end_state": "",
+          "continuity": "continuous|editorial_cut_allowed"
+        }
+      ],
+      "terminal_proof": "",
+      "must_show_progression": true,
+      "confidence": 0.0
+    }
+  ],
   "source_expression": {
     "dialogue_segments": [
       {
@@ -90,4 +134,4 @@ Required JSON shape:
   }
 }
 
-Use confidence values from 0 to 1. Use an empty string/list plus an entry in unknowns when evidence is unavailable. Transcribe only dialogue that is actually audible; do not fabricate dialogue or claims.
+Use confidence values from 0 to 1. Inspect dense frames immediately before and after every meaningful hard cut; do not infer scene continuity from a shared product, actor, use context, or voice-over. In causal_proof_chains, preserve every visible prerequisite, action, state change, and proof angle, and mark when progression itself must remain continuous. Use an empty string/list plus an entry in unknowns when evidence is unavailable. Transcribe only dialogue that is actually audible; do not fabricate dialogue or claims.

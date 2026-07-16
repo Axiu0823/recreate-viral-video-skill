@@ -11,6 +11,17 @@ from pathlib import Path
 from typing import Any
 
 
+SCENE_BOUNDARY_CLASSIFICATIONS = {"opening", "same_scene", "new_scene"}
+PROOF_TYPES = {
+    "none",
+    "endpoint",
+    "comparison",
+    "demonstration",
+    "continuous_transformation",
+}
+ACTION_CONTINUITIES = {"continuous", "editorial_cut_allowed"}
+
+
 def finite_number(value: object) -> float | None:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         return None
@@ -59,6 +70,7 @@ def load_and_validate(
     seen_ids: set[str] = set()
     previous_end: float | None = None
     previous_id: str | None = None
+    previous_scene_id: str | None = None
     for index, segment in enumerate(segments):
         label = f"segments[{index}]"
         if not isinstance(segment, dict):
@@ -114,6 +126,87 @@ def load_and_validate(
         ):
             if not isinstance(segment.get(required), str) or not segment[required].strip():
                 errors.append(f"{label}.{required} is required")
+        scene_id = segment.get("scene_id")
+        audit = segment.get("scene_boundary_audit")
+        if not isinstance(audit, dict):
+            if require_approved:
+                errors.append(f"{label}.scene_boundary_audit is required before approval")
+        else:
+            classification = audit.get("classification")
+            if classification not in SCENE_BOUNDARY_CLASSIFICATIONS:
+                errors.append(f"{label}.scene_boundary_audit.classification is invalid")
+            elif index == 0 and classification != "opening":
+                errors.append("first segment scene boundary classification must be opening")
+            elif index > 0 and classification == "opening":
+                errors.append(f"{label} scene boundary classification cannot be opening")
+            elif index > 0 and classification == "same_scene" and scene_id != previous_scene_id:
+                errors.append(f"{label} same_scene boundary must keep the previous scene_id")
+            elif index > 0 and classification == "new_scene" and scene_id == previous_scene_id:
+                errors.append(f"{label} new_scene boundary must use a new scene_id")
+            evidence = audit.get("evidence_frames_s")
+            minimum_evidence = 1 if index == 0 else 2
+            if not isinstance(evidence, list) or len(evidence) < minimum_evidence:
+                errors.append(
+                    f"{label}.scene_boundary_audit.evidence_frames_s needs "
+                    f"at least {minimum_evidence} frame time(s)"
+                )
+            elif any(finite_number(value) is None or float(value) < 0 for value in evidence):
+                errors.append(
+                    f"{label}.scene_boundary_audit.evidence_frames_s must contain "
+                    "non-negative numbers"
+                )
+            if not isinstance(audit.get("changed_dimensions"), list):
+                errors.append(f"{label}.scene_boundary_audit.changed_dimensions must be an array")
+
+        action_chain = segment.get("non_skippable_action_chain")
+        if not isinstance(action_chain, list):
+            if require_approved:
+                errors.append(f"{label}.non_skippable_action_chain is required before approval")
+        else:
+            for step_index, step in enumerate(action_chain):
+                step_label = f"{label}.non_skippable_action_chain[{step_index}]"
+                if not isinstance(step, dict):
+                    errors.append(f"{step_label} must be an object")
+                    continue
+                if step.get("order") != step_index + 1:
+                    errors.append(f"{step_label}.order must equal {step_index + 1}")
+                for required in (
+                    "action",
+                    "required_visible_start_state",
+                    "required_visible_end_state",
+                ):
+                    if not isinstance(step.get(required), str) or not step[required].strip():
+                        errors.append(f"{step_label}.{required} is required")
+                if step.get("continuity") not in ACTION_CONTINUITIES:
+                    errors.append(f"{step_label}.continuity is invalid")
+
+        proof = segment.get("proof_requirement")
+        if not isinstance(proof, dict):
+            if require_approved:
+                errors.append(f"{label}.proof_requirement is required before approval")
+        else:
+            proof_type = proof.get("type")
+            if proof_type not in PROOF_TYPES:
+                errors.append(f"{label}.proof_requirement.type is invalid")
+            for required in (
+                "must_show_progression",
+                "terminal_anchor_only_is_insufficient",
+            ):
+                if not isinstance(proof.get(required), bool):
+                    errors.append(f"{label}.proof_requirement.{required} must be boolean")
+            if proof_type == "continuous_transformation":
+                if proof.get("must_show_progression") is not True:
+                    errors.append(
+                        f"{label} continuous transformation must show progression"
+                    )
+                if proof.get("terminal_anchor_only_is_insufficient") is not True:
+                    errors.append(
+                        f"{label} continuous transformation cannot pass from a terminal anchor alone"
+                    )
+                if isinstance(action_chain, list) and not action_chain:
+                    errors.append(
+                        f"{label} continuous transformation needs a non-skippable action chain"
+                    )
         if segment.get("status") not in {
             "proposed",
             "approved",
@@ -127,6 +220,8 @@ def load_and_validate(
             errors.append(f"{label}.status must be approved before splitting")
         if isinstance(segment_id, str) and segment_id:
             previous_id = segment_id
+        if isinstance(scene_id, str) and scene_id:
+            previous_scene_id = scene_id
 
     if (
         source_duration is not None

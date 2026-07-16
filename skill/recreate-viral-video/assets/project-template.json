@@ -68,6 +68,12 @@
     "preserve": [],
     "adapt": [],
     "forbid": [],
+    "product_identity_lock": {
+      "canonical_reference_images": [],
+      "applies_to_all_visible_instances": true,
+      "locked_attributes": []
+    },
+    "critical_action_chains": [],
     "shot_plan": []
   },
   "assets": {
@@ -98,6 +104,10 @@
       "persuasion_proof": null,
       "conversion": null
     },
-    "decision": "pending"
+    "decision": "pending",
+    "acceptance": {
+      "segment_approval_scope": {},
+      "assembled_video_status": "pending"
+    }
   }
 }
