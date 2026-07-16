@@ -5,9 +5,10 @@
 1. Source analysis modes
 2. Codex image generation
 3. Gemini API
-4. Seedance 2.0 API
-5. Local video assembly
-6. Official source routing
+4. Temporary reference-video hosting
+5. Seedance 2.0 API
+6. Local video assembly
+7. Official source routing
 
 ## Source analysis modes
 
@@ -31,6 +32,20 @@ The official guide notes that video understanding samples visual content by defa
 ## Codex image generation
 
 Codex built-in image generation currently uses `gpt-image-2`. Invoke the image-generation capability directly (or `$imagegen` where appropriate) rather than building a second OpenAI API integration. Generate the character and scene separately, inspect each result, and keep the original product image as its own Seedance reference.
+
+## Temporary reference-video hosting
+
+Seedance requires a public URL or Ark asset ID for `reference_video`. When the selected reference exists only as a local file, use `scripts/temp_video_upload.py` or pass `--allow-temp-video-upload` to `scripts/seedance_task.py` after the user explicitly authorizes that external transfer.
+
+The bundled adapter follows the current [tmpfile.link API](https://tmpfile.link/index-zh): anonymous `POST /api/upload`, multipart field `file`, JSON `downloadLink` response, 100 MB maximum, and expected seven-day anonymous retention. It uses the Python standard library, streams the upload, validates the extension with `ffprobe`, computes SHA-256, verifies the returned HTTPS URL with a ranged request, and records the expected expiry. It performs one upload attempt and no automatic retry.
+
+Safety rules:
+
+- Upload only the exact authorized video; reject non-video files and videos outside the provider size limit.
+- Require `--confirm-external-upload` for the standalone script or `--allow-temp-video-upload` for automatic Seedance resolution.
+- Never upload `.env`, API requests, logs, credentials, unrelated media, or confidential footage.
+- Treat the URL as public and temporary. Reuse it while verified and unexpired; never treat it as durable storage.
+- Store upload metadata in the project package, but do not commit live temporary URLs to a public repository.
 
 ## Seedance 2.0 API
 
@@ -56,6 +71,7 @@ Seedance 2.0 series request facts from the local snapshot:
 - Default resolution is `720p`; model variants differ on `1080p` and `4k`, so verify the exact active Model ID/Endpoint ID.
 - Avoid a guessed model string. Require the user's actual Model ID or Endpoint ID.
 - Local images may be submitted as data URLs within documented request-size limits. Local reference video cannot be embedded as base64 under the current video-input contract; upload it first or omit it and rely on the beat map.
+- The bundled runner may resolve an authorized local reference video through tmpfile.link when `--allow-temp-video-upload` is present; it saves `reference-video-uploads.json` before the Ark request.
 - Seedance 2.0 face-reference access can require platform-approved, generated, preset, or authorized real-person materials. If a face input is rejected, do not evade the control; use an original generated adult identity or the platform's authorized workflow.
 
 ## Local video assembly

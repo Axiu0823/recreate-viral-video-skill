@@ -75,7 +75,8 @@
     "character_reference": "assets/character-white.png",
     "scene_reference": "assets/scene.png",
     "action_keyframe": "",
-    "reference_video_api_url_or_asset_id": ""
+    "reference_video_api_url_or_asset_id": "",
+    "reference_video_upload_records": []
   },
   "generation": {
     "seedance_model_or_endpoint_id": "",
